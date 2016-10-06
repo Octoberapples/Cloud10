@@ -8,11 +8,11 @@ Cloud project autumn 2016
 **INPUT**:  <br />
 angle_start : smallest anglemof attack (degrees)  <br />
 angle_stop  : biggest angle of attack (degrees)  <br />
-n_angles    : split angle_stop-angle_start into n_angles parts
-n_nodes     : number of nodes on one side of airfoil
-n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=two times etc...
+n_angles    : split angle_stop-angle_start into n_angles parts  <br />
+n_nodes     : number of nodes on one side of airfoil  <br />
+n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=two times etc...  <br />
 
-**OUTPUT**: Parameters 
+**OUTPUT**: Parameters  
 
 * Sends parameters to Master
 
