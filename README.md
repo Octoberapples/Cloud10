@@ -14,16 +14,20 @@ n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=tw
 
 **OUTPUT**: Parameters  
 
-* Sends parameters to Master
 
 ###MASTER
+**INPUT:** <br />
+Parameters <br />
+
+**OUTPUT:** <br />
+Parameters to GENERATE MESH celery worker
 
 ###Celery process GENERATE MESH 
-* Parameters generates several MESH
+This process is going to generate several different meshes 
 
 ###Celery process CONVERTER
 
-###Celery process CALCULATOR
+###Celery process CALCULATOR (AIRFOIL) 
 
 ###RESULT
 * Need to know what the result looks like
