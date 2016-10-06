@@ -15,7 +15,8 @@ n_angles    : split angle_stop-angle_start into n_angles parts  <br />
 n_nodes     : number of nodes on one side of airfoil  <br />
 n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=two times etc...  <br />
 
-**OUTPUT**: Parameters  
+**OUTPUT**: <br />
+Parameters  
 
 
 ###MASTER
