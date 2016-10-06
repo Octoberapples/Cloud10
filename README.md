@@ -48,7 +48,7 @@ This process is going to generate several different meshes by using Gmsh then st
 
 ###Celery process CONVERTER
 This celery process gets mesh (the data) from Swift. This process uses dolfin-convert to convert the meshes into Dolfins XML and then stores it in Swift.  <br />
-**WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
+**WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES** (Link to python converter script https://people.sc.fsu.edu/~jburkardt/py_src/dolfin-convert/dolfin-convert.py)
 
 * Download Gmsh-mesh from Swift 
 * Convert to Dolfin XML by using a dolfin-converter (ships with FEniCS)
