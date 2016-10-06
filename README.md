@@ -7,6 +7,9 @@ Cloud project autumn 2016
 * Orchestration (HEAT-template?)
 * A file with the three tasks (GENERATE MESH, CONVERTER and CALCULATOR)
 * Swift, needs to be able to upload and download the Gmsh-meshes, download Gmsh-meshes and upload and download the XML meshes
+* Celery-Master (starts celery tasks (possibly chains them))  
+* Chain, groups, chords.. etc which one is the best? 
+
 
 
 ##THE DIFFERENT PARTS
@@ -18,6 +21,9 @@ angle_stop  : biggest angle of attack (degrees)  <br />
 n_angles    : split angle_stop-angle_start into n_angles parts  <br />
 n_nodes     : number of nodes on one side of airfoil  <br />
 n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=two times etc...  <br />
+
+* Starting process
+* Fetching process
 
 **OUTPUT**: <br />
 Parameters  
