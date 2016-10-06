@@ -2,7 +2,10 @@
 Cloud project autumn 2016
 
 ##TO DO 
+* Fake Dolfin XML
 
+
+##THE DIFFERENT PARTS
 
 ###REST API
 **INPUT**:  <br />
@@ -23,11 +26,15 @@ Parameters <br />
 Parameters to GENERATE MESH celery worker
 
 ###Celery process GENERATE MESH 
-This process is going to generate several different meshes 
+This process is going to generate several different meshes by using Gmsh then store the result in Swift. 
 
 ###Celery process CONVERTER
+This celery process gets mesh (the data) from Swift. This process uses dolfin-convert to convert the meshes into Dolfins XML and then stores it in Swift.  <br />
+**WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
 
 ###Celery process CALCULATOR (AIRFOIL) 
+This celery process gets the dolfin XML with the mesh data and runs this through airfoil (the calculator). 
+**WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
 
 ###RESULT
 * Need to know what the result looks like
