@@ -80,6 +80,7 @@ git clone https://bitbucket.org/fenics-project/ffc
 cd ffc
 git checkout ffc-1.6.0
 python setup.py install
+cd ..
 
 # Compile Dolfin
 cmake ..
