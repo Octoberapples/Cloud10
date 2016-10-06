@@ -3,6 +3,10 @@ Cloud project autumn 2016
 
 ##TO DO 
 * Fake Dolfin XML
+* REST API (Flask) 
+* Orchestration (HEAT-template?)
+* A file with the three tasks (GENERATE MESH, CONVERTER and CALCULATOR)
+* Swift, needs to be able to upload and download the Gmsh-meshes, download Gmsh-meshes and upload and download the XML meshes
 
 
 ##THE DIFFERENT PARTS
@@ -33,7 +37,7 @@ This process is going to generate several different meshes by using Gmsh then st
 This celery process gets mesh (the data) from Swift. This process uses dolfin-convert to convert the meshes into Dolfins XML and then stores it in Swift.  <br />
 **WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
 
-###Celery process CALCULATOR (AIRFOIL) 
+###Celery process CALCULATOR 
 This celery process gets the dolfin XML with the mesh data and runs this through airfoil (the calculator). 
 **WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
 
