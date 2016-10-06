@@ -24,6 +24,7 @@ n_levels : number of refinement steps in meshing 0=no refinement 1=one time 2=tw
 
 * Starting process
 * Fetching process
+* Status of a process
 
 **OUTPUT**: <br />
 Parameters  
@@ -36,16 +37,31 @@ Parameters <br />
 **OUTPUT:** <br />
 Parameters to GENERATE MESH celery worker
 
+* Start everything
+* Link together tasks
+
 ###Celery process GENERATE MESH 
 This process is going to generate several different meshes by using Gmsh then store the result in Swift. 
+
+* Send parameters to Gmsh and upload the result to Swift
+* Potential authorisation 
 
 ###Celery process CONVERTER
 This celery process gets mesh (the data) from Swift. This process uses dolfin-convert to convert the meshes into Dolfins XML and then stores it in Swift.  <br />
 **WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
 
+* Download Gmsh-mesh from Swift 
+* Convert to Dolfin XML by using a dolfin-converter (ships with FEniCS)
+* Upload Dolfin XML to Swift
+* Potential authorisation
+
 ###Celery process CALCULATOR 
 This celery process gets the dolfin XML with the mesh data and runs this through airfoil (the calculator). 
 **WE CAN'T DO THIS RIGHT NOW BECAUSE OF ISSUES**
+
+* Download Dolfin XML from Swift
+* Use Airfoil to calculate
+* Not yet known what to do with result
 
 ###RESULT
 * Need to know what the result looks like
