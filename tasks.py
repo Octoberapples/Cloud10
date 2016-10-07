@@ -5,6 +5,7 @@ import subprocess
 import shlex
 import tempfile
 import os
+import dolfinConverter
 
 
 cApp = Celery('tasks', broker='amqp://guest@localhost//')
@@ -17,7 +18,15 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes):
 
 @cApp.task
 
-def converter():
+def converter(meshFile):
+
+	tmpFile = tempfile.NamedTemporaryFile().name
+
+	dolfinConverter.mesh2xml(meshFile, tmpFile)
+
+	print(open(tmpFile).read())
+	
+
 
 
 
@@ -26,6 +35,7 @@ def converter():
 
 
 def calculator(nameFile):
+
 
 	tempDir = tempfile.mkdtemp()
 
