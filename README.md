@@ -66,23 +66,10 @@ This celery process gets the dolfin XML with the mesh data and runs this through
 ###RESULT
 * Need to know what the result looks like
 
-###How to compile Dolfin 1.6
+### Worker dependencies
 ```bash
-# Get the source code for Dolfin
-wget https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-1.6.0.tar.gz
-tar -zxvf dolfin-1.6.0.tar.gz
-cd dolfin-1.6.0.tar.gz
-mkdir build
-cd build
-
-# Install FFC
-git clone https://bitbucket.org/fenics-project/ffc
-cd ffc
-git checkout ffc-1.6.0
-python setup.py install
-cd ..
-
-# Compile Dolfin
-cmake ..
-make
+sudo add-apt-repository ppa:fenics-packages/fenics-1.6.x 
+sudo apt-get update 
+sudo apt-get install libdolfin1.6 gmsh python-pip
+sudo pip install numpy
 ```
