@@ -4,13 +4,16 @@ import json
 from subprocess import call
 import shlex
 from naca2gmsh_geo import main as naca2gmsh
+import tempfile
+import os
+import dolfin_converter
 
 #GMSHBIN="/usr/bin/gmsh"
 GMSHBIN = "/Applications/Gmsh.app/Contents/MacOS/gmsh"
 
 cApp = Celery('tasks', broker='amqp://guest@localhost//')
 
-#@cApp.task
+@cApp.task
 
 def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
     
@@ -30,15 +33,38 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
         oldname = newname
     
 
+def converter(mesh):
+    with tempfile.NamedTemporaryFile() as f:
+        # TODO: Download `mesh` from Swift
+        dolfin_converter.gmsh2xml(mesh, f.name)
+        # TODO: upload `f` to Swift
+
+
 @cApp.task
+def calculator(mesh):
+    # TODO: Download `mesh` from Swift
 
-def converter():
-    pass
+    # Changing the working directory to a temporary directory
+    # where `airfoil` will output the result files.
+    temp_dir = tempfile.mkdtemp()
+    os.chdir(temp_dir)
 
+    # TODO: Investigate if the arguments are supposed to be
+    # customizable.
+    subprocess.call([
+        '/home/ubuntu/naca_airfoil/navier_stokes_solver/airfoil',
+        # Number of samples
+        '10',
+        # Viscosity
+        '0.0001',
+        # Speed
+        '10.',
+        # Total time
+        '1',
+        # Input file
+        mesh
+    ])
 
-@cApp.task
-
-def calculator():
-    pass
-
-
+    # TODO: Analyze the generated files and extract only
+    # the information we care about, for later comparsion
+    # against other results.
