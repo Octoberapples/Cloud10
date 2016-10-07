@@ -7,6 +7,7 @@ from naca2gmsh_geo import main as naca2gmsh
 import tempfile
 import os
 import dolfin_converter
+import swift
 
 #GMSHBIN="/usr/bin/gmsh"
 GMSHBIN = "/Applications/Gmsh.app/Contents/MacOS/gmsh"
@@ -39,10 +40,12 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
     return fileList
     
 
+@cApp.task
 def converter(mesh):
     with tempfile.NamedTemporaryFile() as f:
         # TODO: Download `mesh` from Swift
         dolfin_converter.gmsh2xml(mesh, f.name)
+        swift.upload_object('group10_test', 'test123', f)
         # TODO: upload `f` to Swift
 
 
