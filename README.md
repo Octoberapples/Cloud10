@@ -1,16 +1,14 @@
 # Cloud10
 Cloud project autumn 2016
 
-##TO DO 
-* Fake Dolfin XML
-* REST API (Flask) 
-* Orchestration (HEAT-template?)
-* A file with the three tasks (GENERATE MESH, CONVERTER and CALCULATOR)
-* Swift, needs to be able to upload and download the Gmsh-meshes, download Gmsh-meshes and upload and download the XML meshes
-* Celery-Master (starts celery tasks (possibly chains them))  
-* Chain, groups, chords.. etc which one is the best? 
-
-
+## TODO 
+- [ ] Fake Dolfin XML
+- [ ] REST API (Flask) 
+- [ ] Orchestration (HEAT-template?)
+- [ ] A file with the three tasks (GENERATE MESH, CONVERTER and CALCULATOR)
+- [ ] Swift, needs to be able to upload and download the Gmsh-meshes, download Gmsh-meshes and upload and download the XML meshes
+- [ ] Celery-Master (starts celery tasks (possibly chains them))  
+- [ ] Chain, groups, chords.. etc which one is the best? <Paste>
 
 ##THE DIFFERENT PARTS
 
