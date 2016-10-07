@@ -22,7 +22,7 @@ def converter(meshFile):
 
 	tmpFile = tempfile.NamedTemporaryFile().name
 
-	dolfinConverter.mesh2xml(meshFile, tmpFile)
+	dolfinConverter.gmesh2xml(meshFile, tmpFile)
 
 	print(open(tmpFile).read())
 	
