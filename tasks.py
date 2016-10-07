@@ -5,45 +5,49 @@ import subprocess
 import shlex
 import tempfile
 import os
-import dolfinConverter
+import dolfin_converter
 
 
 cApp = Celery('tasks', broker='amqp://guest@localhost//')
 
-@cApp.task
 
+@cApp.task
 def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes):
-    
+    pass
+
+
+def converter(mesh):
+    with tempfile.NamedTemporaryFile() as f:
+        # TODO: Download `mesh` from Swift
+        dolfin_converter.gmsh2xml(mesh, f.name)
+        # TODO: upload `f` to Swift
 
 
 @cApp.task
+def calculator(mesh):
+    # TODO: Download `mesh` from Swift
 
-def converter(meshFile):
+    # Changing the working directory to a temporary directory
+    # where `airfoil` will output the result files.
+    temp_dir = tempfile.mkdtemp()
+    os.chdir(temp_dir)
 
-	tmpFile = tempfile.NamedTemporaryFile().name
+    # TODO: Investigate if the arguments are supposed to be
+    # customizable.
+    subprocess.call([
+        '/home/ubuntu/naca_airfoil/navier_stokes_solver/airfoil',
+        # Number of samples
+        '10',
+        # Viscosity
+        '0.0001',
+        # Speed
+        '10.',
+        # Total time
+        '1',
+        # Input file
+        mesh
+    ])
 
-	dolfinConverter.gmesh2xml(meshFile, tmpFile)
-
-	print(open(tmpFile).read())
-	
-
-
-
-
-@cApp.task
-
-
-
-def calculator(nameFile):
-
-
-	tempDir = tempfile.mkdtemp()
-
-	os.chdir(tempDir)
-
-	args = ["/home/ubuntu/naca_airfoil/navier_stokes_solver/airfoil", "10", "0.0001", "10.", "1",nameFile] 
-	subprocess.call(args)
-
-	print(os.listdir(tempDir))
-
-
+    # TODO: Analyze the generated files and extract only
+    # the information we care about, for later comparsion
+    # against other results.
