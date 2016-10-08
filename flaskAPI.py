@@ -29,7 +29,7 @@ def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
         gMTasks.append(tasks) #Each gmTasks.get() will contain the generated names for .msh files that should be delegated as new tasks.
         
     
-    while len(gMTasks != 0):
+    while (len(gMTasks) != 0):
         for task in gMTasks:
             if task.ready():
                 ## Create new chain converter-airfoil tasks...
