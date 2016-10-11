@@ -1,15 +1,29 @@
 #!flask/bin/python
 # coding=utf-8
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template, request 
 from tasks import generateMesh
 
 app = Flask(__name__)
 
 
 @app.route('/', methods=['GET'])
+def home():
+    return render_template('index.html')
+
+@app.route('/', methods=['POST'])
+def data_post():
+    angle_start = request.form['s_angle']
+    angle_stop = request.form['e_angle']
+    n_angles = request.form['n_angle']
+    n_nodes = request.form['n_nodes']
+    n_levels = request.form['n_levels']
+    
+    processed_text = angle_start.upper()
+    return processed_text
+ 
 
 
-
+"""
 def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
     #NACA four digit airfoil (Typcially NACA0012)
     NACA1 = 0
@@ -39,6 +53,7 @@ def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
 
 
     ##ALL MESH TASKS HAVE BEEN FINISHED AND DELEGATES AS NEW TASKS.... 
+"""
 
 if __name__ == '__main__':
     
