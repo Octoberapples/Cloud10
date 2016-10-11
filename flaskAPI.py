@@ -23,7 +23,7 @@ def data_post():
  
 
 
-"""
+
 def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
     #NACA four digit airfoil (Typcially NACA0012)
     NACA1 = 0
@@ -53,7 +53,7 @@ def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
 
 
     ##ALL MESH TASKS HAVE BEEN FINISHED AND DELEGATES AS NEW TASKS.... 
-"""
+
 
 if __name__ == '__main__':
     
