@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {margin:0;}
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+li {
+    float: left;
+}
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+li a:hover:not(.active) {
+    background-color: #111;
+}
+.active {
+    background-color: #4CAF50;
+}
+</style>
+</head>
+
+
+<div style="padding:20px;margin-top:30px;height:1500px;" align="middle">
+<h1>Airfoil application</h1>
+<img src="/static/airfoil.jpg" border="5" align="middle" WIDTH=400 HEIGHT=250>
+<form action="." method = "Post">
+Start angle: <input type="text" name="s_angle" value="0"><br>
+Stop angle:  <input type="text" name="e_angle" value="30"><br>
+Num angles:   <input type="text" name="n_angle" value="10"><br>
+Num nodes:    <input type="text" name="n_nodes" value="200"><br>
+Num levels:   <input type="text" name="n_levels" value="3"><br>
+<input type="submit" value="Calculate">
+</form>
+</div>
+
+
+
+</body>
+</html>
