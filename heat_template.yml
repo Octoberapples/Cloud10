@@ -26,7 +26,7 @@ parameters:
     type: string
     label: Key name
     description: Name of key-pair to be used for compute instance
-    default: <—MY_KEY_NAME->
+    default: Group10
 
   public_network:
     type: string
@@ -42,6 +42,9 @@ resources:
       name: cluster_sg
       rules:
         - protocol: icmp
+        - protocol: tcp
+          port_range_min: 5000
+          port_range_max: 5000
         - protocol: tcp
           port_range_min: 22
           port_range_max: 22
@@ -76,12 +79,6 @@ resources:
       network: { get_resource: private_network }
       security_groups:
         - { get_resource: cluster_sg }
-  instance_port1:
-    type: OS::Neutron::Port
-    properties:
-      network: { get_resource: private_network }
-      security_groups:
-        - { get_resource: cluster_sg }
  
   master_instance:
     type: OS::Nova::Server
@@ -89,18 +86,19 @@ resources:
       image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key }
-      #security_groups:
-      #  - { get_resource: cluster_sg }
       networks:
         - port: { get_resource: instance_port0 }         
       user_data: |
         #!/bin/sh
         echo "Hello, World!"
-        echo "<ADD-CLUSTER’s-PUBLIC-KEY>" >> /home/ubuntu/.ssh/authorized_keys
-        apt-add-repository -y ppa:ansible/ansible
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
         apt-get update -y
         apt-get upgrade -y
-        apt-get install -y ansible
+        apt-get install -y docker.io
+        apt-get install -y git
+        git clone https://github.com/Octoberapples/Cloud10.git 
+        cd Cloud10
+        docker-compose up 
       user_data_format: RAW
 
   worker_instance1:
@@ -109,34 +107,46 @@ resources:
       image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key }
-      #security_groups:
-      #  - { get_resource: cluster_sg }
       networks:
-        - port: { get_resource: instance_port1 }
+        - network: { get_resource: private_network }
       user_data: |
         #!/bin/sh
         echo "Hello, World!"
-        echo "<ADD-CLUSTER’s-PUBLIC-KEY>" >> /home/ubuntu/.ssh/authorized_keys
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
         apt-get update -y
         apt-get upgrade -y
+        apt-get update -y
+        apt-get upgrade -y
+        apt-get install -y docker.io
+        apt-get install -y git
+        git clone https://github.com/Octoberapples/Cloud10.git 
+        cd Cloud10
+        docker build -t cloud -f Dockerfile.worker . 
+        docker run cloud 
       user_data_format: RAW
 
-   worker_instance2:
+  worker_instance2:
     type: OS::Nova::Server
     properties:
       image: { get_param: image }
       flavor: { get_param: flavor }
       key_name: { get_param: key }
-      #security_groups:
-      #  - { get_resource: cluster_sg }
       networks:
-        - port: { get_resource: instance_port1 }
+        - network: { get_resource: private_network }
       user_data: |
         #!/bin/sh
         echo "Hello, World!"
-        echo "<ADD-CLUSTER’s-PUBLIC-KEY>" >> /home/ubuntu/.ssh/authorized_keys
+        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
         apt-get update -y
         apt-get upgrade -y
+        apt-get update -y
+        apt-get upgrade -y
+        apt-get install -y docker.io
+        apt-get install -y git
+        git clone https://github.com/Octoberapples/Cloud10.git 
+        cd Cloud10
+        docker build -t cloud -f Dockerfile.worker . 
+        docker run cloud 
       user_data_format: RAW
 
 
@@ -150,12 +160,16 @@ resources:
     properties:
       floatingip_id: { get_resource: floating_ip }
       port_id: { get_resource: instance_port0 } 
-
+  
 # Output in case of successful booting
 outputs:
   instance_name:
     description: Name of the instance
-    value: { get_attr: [my_instance0, name] }
+    value: { get_attr: [master_instance, name] }
   instance_ip:
     description: IP address of the instance
-    value: { get_attr: [my_instance0, first_address, floating_ip, floating_ip_address] }
+    value: { get_attr: [master_instance, first_address, floating_ip, floating_ip_address] }
+
+  server_ip:
+    description: fixed ip assigned to the server
+    value: { get_attr: [master_instance, networks, net0, 0]}
