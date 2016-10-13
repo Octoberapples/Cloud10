@@ -1,0 +1,15 @@
+FROM python:2.7
+ENV PYTHONUNBUFFERED 1
+
+RUN apt-get update
+
+RUN pip install celery flask python-keystoneclient python-swiftclient numpy
+
+RUN mkdir -p /srv/app/
+WORKDIR /srv/app/
+
+ADD . /srv/app/
+
+CMD python flaskAPI.py
+
+EXPOSE 5000 5000

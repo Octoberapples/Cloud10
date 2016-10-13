@@ -12,7 +12,7 @@ import swift
 #GMSHBIN="/usr/bin/gmsh"
 GMSHBIN = "/Applications/Gmsh.app/Contents/MacOS/gmsh"
 
-cApp = Celery('tasks', broker='amqp://guest@localhost//')
+cApp = Celery('tasks', broker='amqp://guest@rabbitmq//', backend='amqp://')
 
 @cApp.task
 

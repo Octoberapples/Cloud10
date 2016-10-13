@@ -3,6 +3,8 @@
 from flask import Flask, jsonify, render_template, request, url_for
 import time
 from threading import Thread
+import tasks
+
 
 app = Flask(__name__)
 response_airfoil = {}
