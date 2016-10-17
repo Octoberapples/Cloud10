@@ -21,3 +21,10 @@
       - rabbitmq
    rabbitmq:
      image: rabbitmq:3
+   flower:
+     build:
+       context: .
+       dockerfile: Dockerfile.worker
+     command: flower --app=tasks -l info
+     ports:
+       - "5555:5555"
