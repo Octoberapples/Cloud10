@@ -1,17 +1,23 @@
 FROM ubuntu:xenial
 ENV PYTHONUNBUFFERED 1
 
+RUN sed -i -e 's%http://archive.ubuntu.com/ubuntu%mirror://mirrors.ubuntu.com/mirrors.txt%' -e 's/^deb-src/#deb-src/' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get install -y software-properties-common python-software-properties
 RUN add-apt-repository ppa:fenics-packages/fenics-1.6.x
 RUN apt-get update
-RUN apt-get install -y libdolfin1.6 python python-dev python-pip
+RUN apt-get clean
+RUN apt-get install -y --fix-missing libdolfin1.6 python python-dev python-pip gmsh
+RUN apt-get install -y wget
 
-RUN pip install celery python-keystoneclient python-swiftclient numpy
+RUN wget -q https://github.com/TDB-UU/naca_airfoil/raw/master/navier_stokes_solver/airfoil -O /usr/local/bin/airfoil
+
+RUN pip install celery python-keystoneclient python-swiftclient numpy flower
 
 RUN mkdir -p /srv/app/
 WORKDIR /srv/app/
 
 ADD . /srv/app/
+RUN rm openrc.sh
 
-CMD C_FORCE_ROOT=1 celery worker -A tasks
+CMD . /srv/app/openrc.sh && C_FORCE_ROOT=1 celery worker -A tasks
