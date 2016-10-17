@@ -65,9 +65,9 @@ def data_post():
     n_levels = int(request.form['n_levels'])
 
     t = tasks.build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels)
-    return t.get()
-
-    return render_template('status.html')
+    angle, _, _ = t.get()
+    return angle
+    #return render_template('status.html')
 
 
 ##These functions are constantly pulled by jquery script in status.html #######

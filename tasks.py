@@ -66,6 +66,7 @@ def calculator(mesh):
     # where `airfoil` will output the result files.
     temp_dir = tempfile.mkdtemp()
     os.chdir(temp_dir)
+    os.mkdir('result')
 
     swift.download_object(CONTAINER, mesh)
 
@@ -111,12 +112,12 @@ def calculator(mesh):
     dragMean = numpy.mean(dragArray)
 
     shutil.rmtree(temp_dir)
-    return angle,liftMean,dragMean
+    return angle, liftMean, dragMean
 
 
 @cApp.task
 def choose_best(results):
-    return max(results)
+    return max(results, lambda x: x[2])[0]
 
 
 def build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels):

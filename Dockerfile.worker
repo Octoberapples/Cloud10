@@ -1,4 +1,4 @@
-FROM ubuntu:xenial
+FROM ubuntu:trusty
 ENV PYTHONUNBUFFERED 1
 
 RUN sed -i -e 's%http://archive.ubuntu.com/ubuntu%mirror://mirrors.ubuntu.com/mirrors.txt%' -e 's/^deb-src/#deb-src/' /etc/apt/sources.list
@@ -8,7 +8,9 @@ RUN add-apt-repository ppa:fenics-packages/fenics-1.6.x
 RUN apt-get update
 RUN apt-get clean
 RUN apt-get install -y --fix-missing libdolfin1.6 python python-dev python-pip gmsh
-RUN apt-get install -y wget
+
+# SSH is needed for gmsh to work
+RUN apt-get install -y wget ssh
 
 RUN wget -q https://github.com/TDB-UU/naca_airfoil/raw/master/navier_stokes_solver/airfoil -O /usr/local/bin/airfoil
 RUN chmod +x /usr/local/bin/airfoil
