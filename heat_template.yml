@@ -95,8 +95,8 @@ resources:
         apt-get update -y
         apt-get upgrade -y
         wget -qO- https://get.docker.com/ | sh
-        docker run rabbitmq
-        docker run kjagiello/cloud-computing-master
+        docker run rabbitmq -p 5672:5672 -d
+        docker run kjagiello/cloud-computing-master -p 5000:5000 -d
       user_data_format: RAW
 
   worker_instance1:
@@ -107,18 +107,19 @@ resources:
       key_name: { get_param: key }
       networks:
         - network: { get_resource: private_network }
-      user_data: |
-        #!/bin/sh
-        echo "Hello, World!"
-        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
-        apt-get update -y
-        apt-get upgrade -y
-        echo MYIP master >> /etc/hosts
-        wget -qO- https://get.docker.com/ | sh
-        docker run kjagiello/cloud-computing-worker
-      params:       
-        MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
-      user_data_format: RAW
+      user_data: 
+        str_replace:
+          template: |
+            #!/bin/sh
+            echo "Hello, World!"
+            echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
+            apt-get update -y
+            apt-get upgrade -y
+            echo MYIP master >> /etc/hosts
+            wget -qO- https://get.docker.com/ | sh
+            docker run kjagiello/cloud-computing-worker -d
+          params:       
+            MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
 
   worker_instance2:
     type: OS::Nova::Server
@@ -128,18 +129,19 @@ resources:
       key_name: { get_param: key }
       networks:
         - network: { get_resource: private_network }
-      user_data: |
-        #!/bin/sh
-        echo "Hello, World!"
-        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
-        apt-get update -y
-        apt-get upgrade -y
-        echo MYIP master >> /etc/hosts
-        wget -qO- https://get.docker.com/ | sh
-        docker run kjagiello/cloud-computing-worker
-      params:       
-        MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
-      user_data_format: RAW
+      user_data: 
+        str_replace:
+          template: |
+            #!/bin/sh
+            echo "Hello, World!"
+            echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
+            apt-get update -y
+            apt-get upgrade -y
+            echo MYIP master >> /etc/hosts
+            wget -qO- https://get.docker.com/ | sh
+            docker run kjagiello/cloud-computing-worker -d
+          params:       
+            MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
 
 
   floating_ip:
