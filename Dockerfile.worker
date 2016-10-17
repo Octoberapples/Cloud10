@@ -11,6 +11,7 @@ RUN apt-get install -y --fix-missing libdolfin1.6 python python-dev python-pip g
 RUN apt-get install -y wget
 
 RUN wget -q https://github.com/TDB-UU/naca_airfoil/raw/master/navier_stokes_solver/airfoil -O /usr/local/bin/airfoil
+RUN chmod +x /usr/local/bin/airfoil
 
 RUN pip install celery python-keystoneclient python-swiftclient numpy flower
 

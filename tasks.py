@@ -1,5 +1,5 @@
 # coding=utf-8
-from celery import Celery
+from celery import Celery, chord
 import json
 from subprocess import call
 import shlex
@@ -9,60 +9,70 @@ import os
 import dolfin_converter
 import swift
 import numpy
+import shutil
 
-#GMSHBIN="/usr/bin/gmsh"
-GMSHBIN = "/Applications/Gmsh.app/Contents/MacOS/gmsh"
+
+GMSHBIN = "gmsh"
+CONTAINER = 'group10_container'
 
 cApp = Celery('tasks', broker='amqp://guest@rabbitmq//', backend='amqp://')
 
-@cApp.task
 
+@cApp.task
 def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
+    # Change the working directory to a temporary directory
+    temp_dir = tempfile.mkdtemp()
+    os.chdir(temp_dir)
+
     fileList = []
     filename="a"+str(angle)+"n"+str(n_nodes)
 
-    with open(filename + ".geo", "w") as file :
-        file.write(naca2gmsh(naca1, naca2, naca3, naca4, angle, n_nodes))
+    with open(filename + ".geo", "w") as f:
+        f.write(naca2gmsh(naca1, naca2, naca3, naca4, angle, n_nodes))
 
     # $GMSHBIN -v 0 -nopopup -2 -o $MSHDIR/r0$mshfile $GEODIR/$i;
     call(GMSHBIN + " -v 0 -nopopup -2 -o r0" + filename + ".msh " + filename + ".geo", shell=True)
 
     oldname = "r0" + filename + ".msh"
     fileList.append(oldname)
-    for i in range(0,n_levels) : 
-        newname="r"+str(i+1)+filename+".msh"; 
+    for i in range(0,n_levels) :
+        newname="r"+str(i+1)+filename+".msh";
         call("cp " + oldname + " " + newname, shell=True)
         call(GMSHBIN +" -refine -v 0 " + newname, shell=True)
         fileList.append(newname)
         oldname = newname
 
     # Upload to Swift here?
+    with open(newname, 'r') as f:
+        swift.upload_object(CONTAINER, newname, f)
 
-    return fileList
-    
+    shutil.rmtree(temp_dir)
+    return newname
+
 
 @cApp.task
 def converter(mesh):
     with tempfile.NamedTemporaryFile() as f:
-        # TODO: Download `mesh` from Swift
+        swift.download_object(CONTAINER, mesh)
         dolfin_converter.gmsh2xml(mesh, f.name)
-        swift.upload_object('group10_test', 'test123', f)
-        # TODO: upload `f` to Swift
+        name = '{}.xml'.format(mesh[:-4])
+        swift.upload_object(CONTAINER, name, f)
+    return name
 
 
 @cApp.task
 def calculator(mesh):
-    # TODO: Download `mesh` from Swift
-
     # Changing the working directory to a temporary directory
     # where `airfoil` will output the result files.
     temp_dir = tempfile.mkdtemp()
     os.chdir(temp_dir)
 
+    swift.download_object(CONTAINER, mesh)
+
     # TODO: Investigate if the arguments are supposed to be
     # customizable.
-    subprocess.call([
-        '/home/ubuntu/naca_airfoil/navier_stokes_solver/airfoil',
+    call([
+        'airfoil',
         # Number of samples
         '10',
         # Viscosity
@@ -100,6 +110,19 @@ def calculator(mesh):
     liftMean = numpy.mean(liftArray)
     dragMean = numpy.mean(dragArray)
 
-    return angle,liftMean,dragMean 
+    shutil.rmtree(temp_dir)
+    return angle,liftMean,dragMean
 
-  
+
+@cApp.task
+def choose_best(results):
+    return max(results)
+
+
+def build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels):
+    step = (float(angle_stop) - float(angle_start)) / float(n_angles)
+    tasks = [
+        generateMesh.s(0, 0, 1, 2, float(angle_start) + n * step, n_nodes, n_levels) | converter.s() | calculator.s()
+        for n in range(0, n_angles)
+    ]
+    return chord(tasks)(choose_best.s())
