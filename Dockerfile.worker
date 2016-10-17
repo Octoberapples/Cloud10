@@ -1,7 +1,11 @@
-FROM python:2.7
+FROM ubuntu:xenial
 ENV PYTHONUNBUFFERED 1
 
 RUN apt-get update
+RUN apt-get install -y software-properties-common python-software-properties
+RUN add-apt-repository ppa:fenics-packages/fenics-1.6.x
+RUN apt-get update
+RUN apt-get install -y libdolfin1.6 python python-dev python-pip
 
 RUN pip install celery python-keystoneclient python-swiftclient numpy
 
