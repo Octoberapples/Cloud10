@@ -95,9 +95,11 @@ def calculator(mesh):
     liftArray = [float (i) for i in liftArray]
     dragArray = [float (i) for i in dragArray]
 
+    angle = mesh[mesh.find("a")+1:mesh.find("n")] #Extract angle from file name...
+
     liftMean = numpy.mean(liftArray)
     dragMean = numpy.mean(dragArray)
 
-    return liftMean, dragMean  ##TODO: Best would to also return the angle working with.. How do we get that? Either the master already has it or we somehow need to return it...
+    return angle,liftMean,dragMean 
 
   
