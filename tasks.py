@@ -8,6 +8,7 @@ import tempfile
 import os
 import dolfin_converter
 import swift
+import numpy
 
 #GMSHBIN="/usr/bin/gmsh"
 GMSHBIN = "/Applications/Gmsh.app/Contents/MacOS/gmsh"
@@ -74,6 +75,29 @@ def calculator(mesh):
         mesh
     ])
 
-    # TODO: Analyze the generated files and extract only
-    # the information we care about, for later comparsion
-    # against other results.
+    liftArray = []
+    dragArray = []
+
+    with open('results/drag_ligt.m') as f:
+        for line in f:
+            val = line.split()
+            liftArray.append(val[1])
+            dragArray.append(val[2])
+
+
+    #Ignore x initial values for algoritm to stabilise
+    valueRange = 10
+    for i in range(0,valueRange):
+        liftArray.pop(0)
+        dragArray.pop(0)
+
+    #Convert to floats to calculate the mean
+    liftArray = [float (i) for i in liftArray]
+    dragArray = [float (i) for i in dragArray]
+
+    liftMean = numpy.mean(liftArray)
+    dragMean = numpy.mean(dragArray)
+
+    return liftMean, dragMean  ##TODO: Best would to also return the angle working with.. How do we get that? Either the master already has it or we somehow need to return it...
+
+  
