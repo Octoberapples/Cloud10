@@ -22,6 +22,22 @@ def upload_object(container, object_name, f):
         responses = swift.upload(container, objs)
         _ensure_success(responses)
 
+def search_for_object(container, object_name):
+    """Search for object in container, returns true if found"""
+    with SwiftService() as swift:
+        try:
+            list_gen = swift.list(container=container)
+            for page in list_gen:
+                if page["success"]:
+                    for item in page["listing"]:
+                        if object_name == item["name"]:
+                            return True
+                else:
+                    raise Exception('Error')
+                    
+           
+
+    return False              
 
 def download_object(container, object_name):
     """Downloads object `object_name` from a Swift `container`."""
@@ -40,7 +56,7 @@ def delete_object(container, object_name):
 if __name__ == '__main__':
     import tempfile
     import os
-
+   
     with tempfile.NamedTemporaryFile() as f:
         f.write('randomcontent')
         f.seek(0)
@@ -53,3 +69,4 @@ if __name__ == '__main__':
         assert f.read() == 'randomcontent'
 
     delete_object('container1337', 'testfile')
+
