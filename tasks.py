@@ -26,25 +26,25 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
 
     fileList = []
     filename="a"+str(angle)+"n"+str(n_nodes)
+    if(not search_for_object(CONTAINER,"r"+str(n_levels)+filename)):
+        with open(filename + ".geo", "w") as f:
+            f.write(naca2gmsh(naca1, naca2, naca3, naca4, angle, n_nodes))
 
-    with open(filename + ".geo", "w") as f:
-        f.write(naca2gmsh(naca1, naca2, naca3, naca4, angle, n_nodes))
+        # $GMSHBIN -v 0 -nopopup -2 -o $MSHDIR/r0$mshfile $GEODIR/$i;
+        call(GMSHBIN + " -v 0 -nopopup -2 -o r0" + filename + ".msh " + filename + ".geo", shell=True)
 
-    # $GMSHBIN -v 0 -nopopup -2 -o $MSHDIR/r0$mshfile $GEODIR/$i;
-    call(GMSHBIN + " -v 0 -nopopup -2 -o r0" + filename + ".msh " + filename + ".geo", shell=True)
+        oldname = "r0" + filename + ".msh"
+        fileList.append(oldname)
+        for i in range(0,n_levels) :
+            newname="r"+str(i+1)+filename+".msh";
+            call("cp " + oldname + " " + newname, shell=True)
+            call(GMSHBIN +" -refine -v 0 " + newname, shell=True)
+            fileList.append(newname)
+            oldname = newname
 
-    oldname = "r0" + filename + ".msh"
-    fileList.append(oldname)
-    for i in range(0,n_levels) :
-        newname="r"+str(i+1)+filename+".msh";
-        call("cp " + oldname + " " + newname, shell=True)
-        call(GMSHBIN +" -refine -v 0 " + newname, shell=True)
-        fileList.append(newname)
-        oldname = newname
-
-    # Upload to Swift here?
-    with open(newname, 'r') as f:
-        swift.upload_object(CONTAINER, newname, f)
+         # Upload to Swift here?
+         with open(newname, 'r') as f:
+             swift.upload_object(CONTAINER, newname, f)
 
     shutil.rmtree(temp_dir)
     return newname
@@ -52,11 +52,14 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
 
 @cApp.task
 def converter(mesh):
-    with tempfile.NamedTemporaryFile() as f:
-        swift.download_object(CONTAINER, mesh)
-        dolfin_converter.gmsh2xml(mesh, f.name)
-        name = '{}.xml'.format(mesh[:-4])
-        swift.upload_object(CONTAINER, name, f)
+
+    name = '{}.xml'.format(mesh[:-4])
+    if(not search_for_object(CONTAINER,name)):
+        with tempfile.NamedTemporaryFile() as f:
+            swift.download_object(CONTAINER, mesh)
+            dolfin_converter.gmsh2xml(mesh, f.name)
+            swift.upload_object(CONTAINER, name, f)
+
     return name
 
 
