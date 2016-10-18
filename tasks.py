@@ -100,7 +100,7 @@ def calculator(mesh):
 
 
     #Ignore x initial values for algoritm to stabilise
-    valueRange = int(len(lifArray)/3)
+    valueRange = int(len(liftArray)/3)
     for i in range(0,valueRange):
         liftArray.pop(0)
         dragArray.pop(0)
