@@ -25,15 +25,15 @@ def upload_object(container, object_name, f):
 def search_for_object(container, object_name):
     """Search for object in container, returns true if found"""
     with SwiftService() as swift:
-        try:
-            list_gen = swift.list(container=container)
-            for page in list_gen:
-                if page["success"]:
-                    for item in page["listing"]:
-                        if object_name == item["name"]:
-                            return True
-                else:
-                    raise Exception('Error')
+        
+        list_gen = swift.list(container=container)
+        for page in list_gen:
+            if page["success"]:
+                for item in page["listing"]:
+                    if object_name == item["name"]:
+                        return True
+            else:
+                raise Exception('Error')
                     
            
 
