@@ -1,6 +1,10 @@
 from swiftclient.service import SwiftService, SwiftUploadObject
 
 
+class SwiftException(Exception):
+    pass
+
+
 def _ensure_success(responses):
     """
     Helper function for ensuring that all the responses
@@ -8,7 +12,7 @@ def _ensure_success(responses):
     """
     for r in responses:
         if not r['success']:
-            raise Exception('Upload error: {}'.format(r['error']))
+            raise SwiftException('Swift error: {}'.format(r['error']))
 
 
 def upload_object(container, object_name, f):
@@ -25,7 +29,7 @@ def upload_object(container, object_name, f):
 def search_for_object(container, object_name):
     """Search for object in container, returns true if found"""
     with SwiftService() as swift:
-        
+
         list_gen = swift.list(container=container)
         for page in list_gen:
             if page["success"]:
@@ -33,11 +37,8 @@ def search_for_object(container, object_name):
                     if object_name == item["name"]:
                         return True
             else:
-                raise Exception('Error')
-                    
-           
-
-    return False              
+                raise SwiftException('Error')
+    return False
 
 def download_object(container, object_name):
     """Downloads object `object_name` from a Swift `container`."""
@@ -56,7 +57,7 @@ def delete_object(container, object_name):
 if __name__ == '__main__':
     import tempfile
     import os
-   
+
     with tempfile.NamedTemporaryFile() as f:
         f.write('randomcontent')
         f.seek(0)

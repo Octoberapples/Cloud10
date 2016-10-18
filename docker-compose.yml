@@ -4,27 +4,30 @@
      build:
        context: .
        dockerfile: Dockerfile.master
+     image: kjagiello/cloud-computing-master
      ports:
       - "5000:5000"
       - "5672:5672"
      volumes:
       - .:/srv/app
      depends_on:
-      - rabbitmq
+      - master
    worker:
      build:
        context: .
        dockerfile: Dockerfile.worker
+     image: kjagiello/cloud-computing-worker
      volumes:
       - .:/srv/app
      depends_on:
-      - rabbitmq
-   rabbitmq:
+      - master
+   master:
      image: rabbitmq:3
    flower:
      build:
        context: .
        dockerfile: Dockerfile.worker
+     image: kjagiello/cloud-computing-worker
      command: flower --app=tasks -l info
      ports:
        - "5555:5555"

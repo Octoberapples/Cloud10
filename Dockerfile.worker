@@ -21,6 +21,4 @@ RUN mkdir -p /srv/app/
 WORKDIR /srv/app/
 
 ADD . /srv/app/
-RUN rm openrc.sh
-
 CMD . /srv/app/openrc.sh && C_FORCE_ROOT=1 celery worker -A tasks

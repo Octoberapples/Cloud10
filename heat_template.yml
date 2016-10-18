@@ -7,7 +7,7 @@ heat_template_version: 2013-05-23
 
 description: Simple template to deploy a single compute instance
 
-# Declare parameters 
+# Declare parameters
 parameters:
 
   image:
@@ -20,13 +20,13 @@ parameters:
     type: string
     label: Flavor
     description: Type of instance (flavor) to be used
-    default: m1.small
+    default: c1.small
 
   key:
     type: string
     label: Key name
     description: Name of key-pair to be used for compute instance
-    default: Group10
+    default: kjagiello
 
   public_network:
     type: string
@@ -43,12 +43,18 @@ resources:
       rules:
         - protocol: icmp
         - protocol: tcp
-          port_range_min: 5000
-          port_range_max: 5000
+          port_range_min: 80
+          port_range_max: 80
+        - protocol: tcp
+          port_range_min: 5555
+          port_range_max: 5555
+        - protocol: tcp
+          port_range_min: 5672
+          port_range_max: 5672
         - protocol: tcp
           port_range_min: 22
           port_range_max: 22
- 
+
   private_network:
     type: OS::Neutron::Net
 
@@ -58,8 +64,8 @@ resources:
       network_id: { get_resource: private_network }
       cidr: 10.10.10.0/24
       dns_nameservers:
-        - 130.238.164.6 
-        - 130.238.4.133 
+        - 130.238.164.6
+        - 130.238.4.133
         - 130.238.7.10
   router:
     type: OS::Neutron::Router
@@ -79,7 +85,7 @@ resources:
       network: { get_resource: private_network }
       security_groups:
         - { get_resource: cluster_sg }
- 
+
   master_instance:
     type: OS::Nova::Server
     properties:
@@ -87,16 +93,23 @@ resources:
       flavor: { get_param: flavor }
       key_name: { get_param: key }
       networks:
-        - port: { get_resource: instance_port0 }         
-      user_data: |
-        #!/bin/sh
-        echo "Hello, World!"
-        echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
-        apt-get update -y
-        apt-get upgrade -y
-        wget -qO- https://get.docker.com/ | sh
-        docker run -p 5672:5672 -d rabbitmq 
-        docker run -p 5000:5000 -d kjagiello/cloud-computing-master 
+        - port: { get_resource: instance_port0 }
+      user_data:
+        str_replace:
+          template: |
+            #!/bin/sh
+            echo "Hello, World!"
+            echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
+            apt-get update -y
+            apt-get upgrade -y
+            wget -qO- https://get.docker.com/ | sh
+            iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+            echo MYIP master >> /etc/hosts
+            docker run -p 5672:5672 -d rabbitmq
+            docker run -v /etc/hosts:/etc/hosts -p 80:5000 -d kjagiello/cloud-computing-master
+            docker run -d -v /etc/hosts:/etc/hosts -p 5555:5555 -ti kjagiello/cloud-computing-worker flower --app=tasks -l info
+          params:
+            MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
       user_data_format: RAW
 
   worker_instance1:
@@ -107,7 +120,7 @@ resources:
       key_name: { get_param: key }
       networks:
         - network: { get_resource: private_network }
-      user_data: 
+      user_data:
         str_replace:
           template: |
             #!/bin/sh
@@ -117,8 +130,9 @@ resources:
             apt-get upgrade -y
             echo MYIP master >> /etc/hosts
             wget -qO- https://get.docker.com/ | sh
-            docker run -d kjagiello/cloud-computing-worker 
-          params:       
+            iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+            docker run -v /etc/hosts:/etc/hosts -d kjagiello/cloud-computing-worker
+          params:
             MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
 
   worker_instance2:
@@ -129,7 +143,7 @@ resources:
       key_name: { get_param: key }
       networks:
         - network: { get_resource: private_network }
-      user_data: 
+      user_data:
         str_replace:
           template: |
             #!/bin/sh
@@ -139,8 +153,9 @@ resources:
             apt-get upgrade -y
             echo MYIP master >> /etc/hosts
             wget -qO- https://get.docker.com/ | sh
-            docker run -d kjagiello/cloud-computing-worker 
-          params:       
+            iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+            docker run -v /etc/hosts:/etc/hosts -d kjagiello/cloud-computing-worker
+          params:
             MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
 
 
@@ -153,8 +168,8 @@ resources:
     type: OS::Neutron::FloatingIPAssociation
     properties:
       floatingip_id: { get_resource: floating_ip }
-      port_id: { get_resource: instance_port0 } 
-  
+      port_id: { get_resource: instance_port0 }
+
 # Output in case of successful booting
 outputs:
   instance_name:

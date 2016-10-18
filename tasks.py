@@ -15,7 +15,7 @@ import shutil
 GMSHBIN = "gmsh"
 CONTAINER = 'group10_container'
 
-cApp = Celery('tasks', broker='amqp://guest@rabbitmq//', backend='amqp://')
+cApp = Celery('tasks', broker='amqp://guest@master//', backend='amqp://')
 
 
 @cApp.task
@@ -26,7 +26,9 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
 
     fileList = []
     filename="a"+str(angle)+"n"+str(n_nodes)
-    if(not search_for_object(CONTAINER,"r"+str(n_levels)+filename)):
+    newname = "r"+str(n_levels)+filename+".msh"
+
+    if not swift.search_for_object(CONTAINER, newname):
         with open(filename + ".geo", "w") as f:
             f.write(naca2gmsh(naca1, naca2, naca3, naca4, angle, n_nodes))
 
@@ -50,72 +52,81 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
     return newname
 
 
-@cApp.task
-def converter(mesh):
+@cApp.task(bind=True)
+def converter(self, mesh):
+    try:
+        temp_dir = tempfile.mkdtemp()
+        os.chdir(temp_dir)
 
-    name = '{}.xml'.format(mesh[:-4])
-    if(not search_for_object(CONTAINER,name)):
-        with tempfile.NamedTemporaryFile() as f:
-            swift.download_object(CONTAINER, mesh)
-            dolfin_converter.gmsh2xml(mesh, f.name)
-            swift.upload_object(CONTAINER, name, f)
+        name = '{}.xml'.format(mesh[:-4])
+        if not swift.search_for_object(CONTAINER,name):
+            with tempfile.NamedTemporaryFile() as f:
+                swift.download_object(CONTAINER, mesh)
+                dolfin_converter.gmsh2xml(mesh, f.name)
+                swift.upload_object(CONTAINER, name, f)
 
-    return name
-
-
-@cApp.task
-def calculator(mesh):
-    # Changing the working directory to a temporary directory
-    # where `airfoil` will output the result files.
-    temp_dir = tempfile.mkdtemp()
-    os.chdir(temp_dir)
-    os.mkdir('result')
-
-    swift.download_object(CONTAINER, mesh)
-
-    # TODO: Investigate if the arguments are supposed to be
-    # customizable.
-    call([
-        'airfoil',
-        # Number of samples
-        '10',
-        # Viscosity
-        '0.0001',
-        # Speed
-        '10.',
-        # Total time
-        '1',
-        # Input file
-        mesh
-    ])
-
-    liftArray = []
-    dragArray = []
-
-    with open('results/drag_ligt.m') as f:
-        for line in f:
-            val = line.split()
-            liftArray.append(val[1])
-            dragArray.append(val[2])
+        shutil.rmtree(temp_dir)
+        return name
+    except swift.SwiftException as exc:
+        self.retry(exc=exc, countdown=10)
 
 
-    #Ignore x initial values for algoritm to stabilise
-    valueRange = int(len(liftArray)/3)
-    for i in range(0,valueRange):
-        liftArray.pop(0)
-        dragArray.pop(0)
+@cApp.task(bind=True)
+def calculator(self, mesh):
+    try:
+        # Changing the working directory to a temporary directory
+        # where `airfoil` will output the result files.
+        temp_dir = tempfile.mkdtemp()
+        os.chdir(temp_dir)
+        os.mkdir('result')
 
-    #Convert to floats to calculate the mean
-    liftArray = [float (i) for i in liftArray]
-    dragArray = [float (i) for i in dragArray]
+        swift.download_object(CONTAINER, mesh)
 
-    angle = mesh[mesh.find("a")+1:mesh.find("n")] #Extract angle from file name...
+        # TODO: Investigate if the arguments are supposed to be
+        # customizable.
+        call([
+            'airfoil',
+            # Number of samples
+            '10',
+            # Viscosity
+            '0.0001',
+            # Speed
+            '10.',
+            # Total time
+            '1',
+            # Input file
+            mesh
+        ])
 
-    liftMean = numpy.mean(liftArray)
-    dragMean = numpy.mean(dragArray)
+        liftArray = []
+        dragArray = []
 
-    shutil.rmtree(temp_dir)
-    return angle, liftMean, dragMean
+        with open('results/drag_ligt.m') as f:
+            for line in f:
+                val = line.split()
+                liftArray.append(val[1])
+                dragArray.append(val[2])
+
+
+        #Ignore x initial values for algoritm to stabilise
+        valueRange = 10
+        for i in range(0,valueRange):
+            liftArray.pop(0)
+            dragArray.pop(0)
+
+        #Convert to floats to calculate the mean
+        liftArray = [float (i) for i in liftArray]
+        dragArray = [float (i) for i in dragArray]
+
+        angle = mesh[mesh.find("a")+1:mesh.find("n")] #Extract angle from file name...
+
+        liftMean = numpy.mean(liftArray)
+        dragMean = numpy.mean(dragArray)
+
+        shutil.rmtree(temp_dir)
+        return angle, liftMean, dragMean
+    except swift.SwiftException as exc:
+        self.retry(exc=exc, countdown=10)
 
 
 @cApp.task
