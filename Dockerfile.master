@@ -6,7 +6,7 @@ RUN pip install celery flask python-keystoneclient python-swiftclient numpy
 RUN mkdir -p /srv/app/
 
 WORKDIR /srv/app/
-ADD . /srv/app/
+ADD src/ /srv/app/
 
 CMD python flaskAPI.py
 EXPOSE 5000 5000

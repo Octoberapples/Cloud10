@@ -20,5 +20,6 @@ RUN pip install celery python-keystoneclient python-swiftclient numpy flower
 RUN mkdir -p /srv/app/
 WORKDIR /srv/app/
 
-ADD . /srv/app/
+ADD src/ /srv/app/
+ADD openrc.sh /srv/app/
 CMD . /srv/app/openrc.sh && C_FORCE_ROOT=1 celery worker -A tasks
