@@ -42,9 +42,9 @@ def generateMesh(naca1, naca2, naca3, naca4, angle, n_nodes, n_levels):
             fileList.append(newname)
             oldname = newname
 
-         # Upload to Swift here?
-         with open(newname, 'r') as f:
-             swift.upload_object(CONTAINER, newname, f)
+        # Upload to Swift here?
+        with open(newname, 'r') as f:
+            swift.upload_object(CONTAINER, newname, f)
 
     shutil.rmtree(temp_dir)
     return newname
