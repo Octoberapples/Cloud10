@@ -34,6 +34,11 @@ parameters:
     description: Public network with floating IP addresses.
     default: public
 
+  worker_count:
+    type: number
+    label: Number of worker instances
+    default: 3
+
 # Resource allocation
 resources:
   cluster_sg:
@@ -112,52 +117,34 @@ resources:
             MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
       user_data_format: RAW
 
-  worker_instance1:
-    type: OS::Nova::Server
+  worker_group:
+    type: OS::Heat::ResourceGroup
     properties:
-      image: { get_param: image }
-      flavor: { get_param: flavor }
-      key_name: { get_param: key }
-      networks:
-        - network: { get_resource: private_network }
-      user_data:
-        str_replace:
-          template: |
-            #!/bin/sh
-            echo "Hello, World!"
-            echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
-            apt-get update -y
-            apt-get upgrade -y
-            echo MYIP master >> /etc/hosts
-            wget -qO- https://get.docker.com/ | sh
-            iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-            docker run -v /etc/hosts:/etc/hosts -d kjagiello/cloud-computing-worker
-          params:
-            MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
-
-  worker_instance2:
-    type: OS::Nova::Server
-    properties:
-      image: { get_param: image }
-      flavor: { get_param: flavor }
-      key_name: { get_param: key }
-      networks:
-        - network: { get_resource: private_network }
-      user_data:
-        str_replace:
-          template: |
-            #!/bin/sh
-            echo "Hello, World!"
-            echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
-            apt-get update -y
-            apt-get upgrade -y
-            echo MYIP master >> /etc/hosts
-            wget -qO- https://get.docker.com/ | sh
-            iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-            docker run -v /etc/hosts:/etc/hosts -d kjagiello/cloud-computing-worker
-          params:
-            MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
-
+      count: { get_param: worker_count }
+      resource_def:
+        type: OS::Nova::Server
+        properties:
+          name: group10_worker%index%
+          image: { get_param: image }
+          flavor: { get_param: flavor }
+          key_name: { get_param: key }
+          networks:
+            - network: { get_resource: private_network }
+          user_data:
+            str_replace:
+              template: |
+                #!/bin/sh
+                echo "Hello, World!"
+                echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDFjuKiUmKFXntODGBo+eYm1dlQZyPkoOTOQP2BE4nw//5LMVThE1W3Ts8KLqfGLFj4a2RFXli4Z2oeF58Gfkb03jt2xuGKSik93aAG5VP4lpPUk53gvlBhGOr8nl74AsreDH7+DxZy+gwaioyddAuojp+WiKBwnWt8HSo/oGSsmEMzXAkAQPx1IjeMGPgWmem1jALb2PggS9yMvB1KhcdSVmDqDgskrzPmHmAgridZ4I5yvXpxd9EefqInohjP05YhMjlAQO6dHZUb9aWhyuVrTx5MEt3ZSEpV6mi0vlUZOs0LU+BZL8oj8NiG3AlMKa66DqSLn2MfVzWVBNLAvPV7 Generated-by-Nova" >> /home/ubuntu/.ssh/authorized_keys
+                apt-get update -y
+                apt-get upgrade -y
+                echo MYIP master >> /etc/hosts
+                wget -qO- https://get.docker.com/ | sh
+                iptables -I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+                docker run -v /etc/hosts:/etc/hosts -d kjagiello/cloud-computing-worker
+              params:
+                MYIP : {get_attr: [instance_port0, fixed_ips, 0, ip_address]}
+          user_data_format: RAW
 
   floating_ip:
     type: OS::Neutron::FloatingIP
