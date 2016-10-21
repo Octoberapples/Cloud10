@@ -1,0 +1,11 @@
+<!doctype html>
+<title>Result</title>
+{% if filename %}
+
+  <div style="padding:20px;margin-top:30px;height:1500px;" align="middle">
+  <h1>Results</h1>
+  <img src="{{filename}}" border="5" align="middle" WIDTH=400 HEIGHT=250>
+  <img src="{{filename1}}" border="5" align="middle" WIDTH=400 HEIGHT=250>
+{% else %}
+  <h1>no image for whatever reason</h1>
+{% endif %}
