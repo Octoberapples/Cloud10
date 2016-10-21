@@ -147,7 +147,7 @@ def build_graph(results):
         swift.upload_object(GRAPH_CONTAINER, name1, f)
 
     with tempfile.NamedTemporaryFile() as f:
-        graph.build_graph(f, 'Drag', angles, lift)
+        graph.build_graph(f, 'Drag', angles, drag)
         f.seek(0)
         swift.upload_object(GRAPH_CONTAINER, name2, f)
 
