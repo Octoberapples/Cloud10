@@ -1,19 +1,23 @@
 # coding=utf-8
-from celery import Celery, chord
+import uuid
 import json
-from subprocess import call
 import shlex
-from naca2gmsh_geo import main as naca2gmsh
 import tempfile
 import os
 import dolfin_converter
 import swift
 import numpy
 import shutil
+import graph
+from StringIO import StringIO
+from celery import Celery, chord
+from subprocess import call
+from naca2gmsh_geo import main as naca2gmsh
 
 
 GMSHBIN = "gmsh"
 CONTAINER = 'group10_container'
+GRAPH_CONTAINER = 'group10_graphs'
 
 cApp = Celery('tasks', broker='amqp://guest@master//', backend='amqp://')
 
@@ -130,8 +134,29 @@ def calculator(self, mesh):
 
 
 @cApp.task
-def choose_best(results):
-    return max(results, lambda x: x[2])[0]
+def build_graph(results):
+    temp_dir = tempfile.mkdtemp()
+    os.chdir(temp_dir)
+
+    sorted_results = sorted(results, key=lambda x: x[0])
+    angles, lift, drag = zip(*sorted_results)
+
+    name1 = '{}.png'.format(uuid.uuid4())
+    name2 = '{}.png'.format(uuid.uuid4())
+
+    with tempfile.NamedTemporaryFile() as f:
+        graph.build_graph(f, 'Lift', angles, lift)
+        f.seek(0)
+        swift.upload_object(GRAPH_CONTAINER, name1, f)
+
+    with tempfile.NamedTemporaryFile() as f:
+        graph.build_graph(f, 'Drag', angles, lift)
+        f.seek(0)
+        swift.upload_object(GRAPH_CONTAINER, name2, f)
+
+    shutil.rmtree(temp_dir)
+
+    return name1, name2
 
 
 def build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels):
@@ -140,4 +165,4 @@ def build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels):
         generateMesh.s(0, 0, 1, 2, float(angle_start) + n * step, n_nodes, n_levels) | converter.s() | calculator.s()
         for n in range(0, n_angles)
     ]
-    return chord(tasks)(choose_best.s())
+    return chord(tasks)(build_graph.s())

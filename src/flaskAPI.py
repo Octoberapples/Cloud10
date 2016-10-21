@@ -65,50 +65,8 @@ def data_post():
     n_levels = int(request.form['n_levels'])
 
     t = tasks.build_workflow(angle_start, angle_stop, n_angles, n_nodes, n_levels)
-    angle, _, _ = t.get()
-    return angle
-    #return render_template('status.html')
-
-
-##These functions are constantly pulled by jquery script in status.html #######
-@app.route('/status_airfoil')
-def status_airfoil():
-     return jsonify(response_airfoil)
-
-@app.route('/airfoil', methods=['POST'])
-def airfoil():
-
-     return jsonify({}), 202, {'Location': url_for('status_airfoil')}
-
-###############################################################################
-
-
-def startProcess(angle_start, angle_stop, n_angles, n_nodes, n_levels):
-    #NACA four digit airfoil (Typcially NACA0012)
-    NACA1 = 0
-    NACA2 = 0
-    NACA3 = 1
-    NACA4 = 2
-
-    #TODO: Calculate total amount of jobs to be done
-    ##START OF MESH TASKS
-
-    angleDiff = (angle_stop-angle_start)/n_angles
-    gMTasks = []
-
-    ##Push work related to creating .msh files to celery workers
-    for i in range(0,n_angles):
-        angle = angle_start + angleDiff * i
-        tasks = generateMesh.delay(NACA1,NACA2,NACA3,NACA4,angle,n_nodes,n_levels)
-        gMTasks.append(tasks) #Each gmTasks.get() will contain the generated names for .msh files that should be delegated as new tasks.
-
-
-    while (len(gMTasks) != 0):
-        for task in gMTasks:
-            if task.ready():
-                ## Create new chain converter-airfoil tasks...
-                gMTasks.remove(task)
-
+    graphs = t.get()
+    return render_template('result.html', graphs=graphs)
 
 
 if __name__ == '__main__':

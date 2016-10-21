@@ -26,6 +26,7 @@ def upload_object(container, object_name, f):
         responses = swift.upload(container, objs)
         _ensure_success(responses)
 
+
 def search_for_object(container, object_name):
     """Search for object in container, returns true if found"""
     with SwiftService() as swift:
@@ -39,6 +40,7 @@ def search_for_object(container, object_name):
             else:
                 raise SwiftException('Error')
     return False
+
 
 def download_object(container, object_name):
     """Downloads object `object_name` from a Swift `container`."""
@@ -62,6 +64,8 @@ if __name__ == '__main__':
         f.write('randomcontent')
         f.seek(0)
         upload_object('container1337', 'testfile', f)
+
+    assert search_for_object('container1337', 'testfile')
 
     download_object('container1337', 'testfile')
     assert os.path.exists('testfile')

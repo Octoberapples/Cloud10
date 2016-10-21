@@ -8,6 +8,7 @@ RUN add-apt-repository ppa:fenics-packages/fenics-1.6.x
 RUN apt-get update
 RUN apt-get clean
 RUN apt-get install -y --fix-missing libdolfin1.6 python python-dev python-pip gmsh
+RUN apt-get install -y pkg-config libfreetype6-dev libpng-dev python-tk
 
 # SSH is needed for gmsh to work
 RUN apt-get install -y wget ssh
@@ -15,7 +16,7 @@ RUN apt-get install -y wget ssh
 RUN wget -q https://github.com/TDB-UU/naca_airfoil/raw/master/navier_stokes_solver/airfoil -O /usr/local/bin/airfoil
 RUN chmod +x /usr/local/bin/airfoil
 
-RUN pip install celery python-keystoneclient python-swiftclient numpy flower
+RUN pip install celery python-keystoneclient python-swiftclient numpy flower matplotlib
 
 RUN mkdir -p /srv/app/
 WORKDIR /srv/app/

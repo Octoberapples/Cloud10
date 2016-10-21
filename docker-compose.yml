@@ -9,7 +9,7 @@
       - "5000:5000"
       - "5672:5672"
      volumes:
-      - .:/srv/app
+      - ./src/:/srv/app
      depends_on:
       - master
    worker:
@@ -18,7 +18,8 @@
        dockerfile: Dockerfile.worker
      image: kjagiello/cloud-computing-worker
      volumes:
-      - .:/srv/app
+      - ./src/:/srv/app
+      - ./openrc.sh:/srv/app/openrc.sh
      depends_on:
       - master
    master:
