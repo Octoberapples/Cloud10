@@ -16,8 +16,7 @@ def build_graph(f, name, angles, y_axis):
 
     plt.legend(fancybox=True, shadow=True)
     plt.savefig(f, format='png')
-
-    return plt
+    plt.close()
 
 
 if __name__ == '__main__':
