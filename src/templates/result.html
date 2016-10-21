@@ -1,9 +1,7 @@
 <!doctype html>
 <title>Result</title>
-{% if graphs %}
 {% for graph in graphs %}
 <img src="http://130.238.29.253:8080/swift/v1/group10_graphs/{{ graph }}" />
-{% endfor %}
 {% else %}
 <h1>no image for whatever reason</h1>
-{% endif %}
+{% endfor %}

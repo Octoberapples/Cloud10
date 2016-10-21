@@ -74,4 +74,3 @@ if __name__ == '__main__':
         assert f.read() == 'randomcontent'
 
     delete_object('container1337', 'testfile')
-

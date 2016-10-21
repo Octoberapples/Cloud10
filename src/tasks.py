@@ -1,7 +1,5 @@
 # coding=utf-8
 import uuid
-import json
-import shlex
 import tempfile
 import os
 import dolfin_converter
@@ -9,7 +7,6 @@ import swift
 import numpy
 import shutil
 import graph
-from StringIO import StringIO
 from celery import Celery, chord
 from subprocess import call
 from naca2gmsh_geo import main as naca2gmsh
