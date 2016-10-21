@@ -5,19 +5,19 @@ import numpy as np
    Saves the file in the folder static
 
 """
-def buildGraph(angles,y_axis,type):
+def buildGraph(angles,y_axis,name):
 
     angles, y_axis = zip(*sorted(zip(angles, y_axis))) #Sort angles and sorts y_axis based on angles...
     import matplotlib.pyplot as plt
 
     plt.ioff()
-    plt.plot(angles,y_axis, label="Mean " + type)
+    plt.plot(angles,y_axis, label="Mean " + name)
     plt.xlabel('Angle')
     plt.title('Results produced by the airfoil application')
     plt.grid(True)
     
     plt.legend(fancybox=True, shadow=True)
-    location = "static/"+type+".png"
+    location = "static/"+name+".png"
     plt.savefig(location)
     plt.close()
     return location
